@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import subprocess
 import os
-import pickle
 from queue import Queue
 
 app = Flask(__name__)
@@ -12,15 +11,23 @@ hash_queue = Queue()
 # Dictionary to store cracked hashes
 cracked_hashes = {}
 
-def load_cracked_hashes():
-    if os.path.exists(pickle_file):
-        with open(pickle_file, 'rb') as f:
-            return pickle.load(f)
-    return {}
+potfile = '/root/.hashcat/hashcat.potfile'
 
-def save_cracked_hashes():
-    with open(pickle_file, 'wb') as f:
-        pickle.dump(cracked_hashes, f)
+def load_cracked_hashes():
+    if os.path.exists(potfile):
+        with open(potfile) as f:
+            raw_hashes = f.readlines()
+
+    cracked_hashes = {}
+
+    for hash in raw_hashes:
+        hash = hash.rstrip()
+        hash = hash.split(':')
+        cracked_hashes[hash[0]] = hash[1]
+
+    return cracked_hashes
+    
+
 
 # Load cracked hashes from the pickled file on start
 cracked_hashes = load_cracked_hashes()
