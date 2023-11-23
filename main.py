@@ -17,7 +17,9 @@ def load_cracked_hashes():
     if os.path.exists(potfile):
         with open(potfile) as f:
             raw_hashes = f.readlines()
-
+    else:
+        return {}
+        
     cracked_hashes = {}
 
     for hash in raw_hashes:
@@ -26,10 +28,8 @@ def load_cracked_hashes():
         cracked_hashes[hash[0]] = hash[1]
 
     return cracked_hashes
-    
 
-
-# Load cracked hashes from the pickled file on start
+# Load cracked hashes from the potfile on start
 cracked_hashes = load_cracked_hashes()
 
 def crack_hash(hash_to_crack):
