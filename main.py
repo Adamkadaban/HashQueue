@@ -19,7 +19,7 @@ def load_cracked_hashes():
             raw_hashes = f.readlines()
     else:
         return {}
-        
+
     cracked_hashes = {}
 
     for hash in raw_hashes:
@@ -29,9 +29,6 @@ def load_cracked_hashes():
 
     return cracked_hashes
 
-# Load cracked hashes from the potfile on start
-cracked_hashes = load_cracked_hashes()
-
 def crack_hash(hash_to_crack):
     # Replace this command with your actual hashcat command
     # For example: subprocess.run(['hashcat', '-m', '0', hash_to_crack])
@@ -39,9 +36,6 @@ def crack_hash(hash_to_crack):
     print(f"Cracking hash: {hash_to_crack}")
     return f"Hash cracked for {hash_to_crack}"
 
-def update_cracked_hashes(hash_to_crack, password):
-    cracked_hashes[hash_to_crack] = password
-    save_cracked_hashes()
 
 @app.route('/crack', methods=['POST'])
 def crack_hash_endpoint():
@@ -53,6 +47,10 @@ def crack_hash_endpoint():
     hash_to_crack = data['hash']
 
     # Check if the hash is already cracked
+
+    # Load cracked hashes from the potfile
+    cracked_hashes = load_cracked_hashes()
+
     if hash_to_crack in cracked_hashes:
         return jsonify({'result': f"Hash already cracked: {cracked_hashes[hash_to_crack]}"})
 
