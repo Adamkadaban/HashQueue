@@ -13,6 +13,9 @@ cracked_hashes = {}
 
 potfile = '/root/.hashcat/hashcat.potfile'
 
+# Load cracked hashes from the potfile
+cracked_hashes = load_cracked_hashes()
+
 def load_cracked_hashes():
     if os.path.exists(potfile):
         with open(potfile) as f:
@@ -47,9 +50,6 @@ def crack_hash_endpoint():
     hash_to_crack = data['hash']
 
     # Check if the hash is already cracked
-
-    # Load cracked hashes from the potfile
-    cracked_hashes = load_cracked_hashes()
 
     if hash_to_crack in cracked_hashes:
         return jsonify({'result': f"Hash already cracked: {cracked_hashes[hash_to_crack]}"})
