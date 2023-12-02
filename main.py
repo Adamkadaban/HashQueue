@@ -1,3 +1,4 @@
+#!/bin/python3
 from flask import Flask, request, jsonify
 import subprocess
 import os
@@ -63,7 +64,7 @@ def crack_hash_endpoint():
     # Add the hash to the queue
     hash_queue.put(hash_to_crack)
 
-    return jsonify({'result': 'Hash added to the cracking queue'})
+    return jsonify({'result': 'Hash added to the cracking queue'}), 200
 
 @app.route('/crackPcap', methods=['PUT'])
 def crack_pcap_endpoint():
@@ -89,8 +90,8 @@ def crack_pcap_endpoint():
             crack_hash(hash)
 
         os.remove('/tmp/HashQueue.hash')
-        
-        return jsonify({'result': 'Hashes added to the cracking queue'}), 200
+
+        return jsonify({'result': 'Hashes added to the cracking queue', 'hashes':raw_hashes}), 200
     else:
         return jsonify({'error': 'Hashes not found in pcap'}), 400
 
