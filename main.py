@@ -88,6 +88,8 @@ def crack_pcap_endpoint():
         for hash in raw_hashes:
             crack_hash(hash)
 
+        os.remove('/tmp/HashQueue.hash')
+        
         return jsonify({'result': 'Hashes added to the cracking queue'}), 200
     else:
         return jsonify({'error': 'Hashes not found in pcap'}), 400
