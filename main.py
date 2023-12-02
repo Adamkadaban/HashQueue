@@ -59,7 +59,7 @@ def crack_hash_endpoint():
     # Check if the hash is already cracked
 
     if hash_to_crack in cracked_hashes:
-        return jsonify({'result': f"Hash already cracked: {cracked_hashes[hash_to_crack]}"})
+        return jsonify({'result': f"Hash already cracked"})
 
     # Add the hash to the queue
     hash_queue.put(hash_to_crack)
@@ -94,6 +94,23 @@ def crack_pcap_endpoint():
         return jsonify({'result': 'Hashes added to the cracking queue', 'hashes':raw_hashes}), 200
     else:
         return jsonify({'error': 'Hashes not found in pcap'}), 400
+
+@app.route('/getCrackedHash', method=['POST'])
+def get_cracked_hash():
+    data = request.get_json()
+
+    if 'hash' not in data:
+        return jsonify({'error': 'Hash not provided'}), 400
+
+    hash_to_check = data['hash']
+
+    if hash_to_check not in cracked_hashes:
+        return jsonify({'error': 'No request made to crack'}), 400
+
+    if cracked_hashes[hash_to_check] == '':
+        return jsonify({'result': 'Unable to crack'}), 200
+
+    return jsonify({'result': cracked_hashes[hash_to_check]}), 200
 
 
 def process_queue():
