@@ -11,7 +11,7 @@ RUN wget https://github.com/hashcat/hashcat/releases/download/v6.2.6/hashcat-6.2
 
 RUN ln -s /usr/share/hashcat/hashcat-6.3.6/hashcat.bin /bin/hashcat
 
-RUN mkdir -p /opt/cracker && \
+RUN mkdir -p /opt/HashQueue && \
     mkdir -p /usr/share/wordlists
 
 COPY main.py /opt/cracker/main.py
@@ -19,6 +19,6 @@ COPY rockyou.txt /usr/share/wordlists
 
 RUN pip3 install gunicorn
 
-WORKDIR /opt/cracker
+WORKDIR /opt/HashQueue
 
 ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:8000", "main:app"]
