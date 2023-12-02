@@ -13,6 +13,7 @@ RUN ln -s /usr/share/hashcat/hashcat-6.3.6/hashcat.bin /bin/hashcat
 
 RUN mkdir -p /opt/HashQueue && \
     mkdir -p /usr/share/wordlists
+	mkdir -p /opt/HashQueue/data
 
 COPY main.py /opt/cracker/main.py
 COPY rockyou.txt /usr/share/wordlists
