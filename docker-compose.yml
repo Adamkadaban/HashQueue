@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./main.py:/opt/HashQueue/main.py
+      - ./rockyou.txt:/usr/share/wordlists/rockyou.txt
+      - ./data:/opt/HashQueue/data
