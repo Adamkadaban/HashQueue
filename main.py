@@ -13,9 +13,6 @@ cracked_hashes = {}
 
 potfile = '/root/.hashcat/hashcat.potfile'
 
-# Load cracked hashes from the potfile
-cracked_hashes = load_cracked_hashes()
-
 def load_cracked_hashes():
     if os.path.exists(potfile):
         with open(potfile) as f:
@@ -120,6 +117,12 @@ def process_queue():
         hash_to_crack = hash_queue.get()
         result = crack_hash(hash_to_crack)
         update_cracked_hashes(hash_to_crack, result)
+
+
+
+# Load cracked hashes from the potfile
+cracked_hashes = load_cracked_hashes()
+
 
 if __name__ == '__main__':
     # Run the queue processing in the background
