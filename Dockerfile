@@ -12,4 +12,4 @@ COPY rockyou.txt /usr/share/wordlists
 
 WORKDIR /opt/HashQueue
 
-ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "main:app"]
