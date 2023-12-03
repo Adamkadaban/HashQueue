@@ -6,8 +6,8 @@ RUN apt-get update && \
 RUN mkdir -p /opt/HashQueue/data && \
     mkdir -p /usr/share/wordlists
 
-COPY main.py /opt/cracker/main.py
-COPY rockyou.txt /usr/share/wordlists
+COPY main.py /opt/HashQueue/
+COPY rockyou.txt /usr/share/wordlists/
 
 WORKDIR /opt/HashQueue
 
