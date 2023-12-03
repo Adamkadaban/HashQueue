@@ -1,16 +1,12 @@
 #!/bin/python3
 from flask import Flask, request, jsonify
 import os
-from queue import Queue
 import threading
 import subprocess
 from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
-
-# Queue to manage hash cracking requests
-hash_queue = Queue()
 
 # Dictionary to store cracked hashes
 cracked_hashes = {}
@@ -36,7 +32,7 @@ def load_cracked_hashes():
 def crack_hash(hash_to_crack):
     # Replace this command with your actual hashcat command
     # For example: subprocess.run(['hashcat', '-m', '0', hash_to_crack])
-	# TODO: Deal with unknown hash mode. 
+    # TODO: Deal with unknown hash mode. 
     print(f"Cracking hash: {hash_to_crack}")
     with open('/tmp/HashQueue.hash', 'w') as fout:
         fout.write(hash_to_crack)
@@ -98,7 +94,7 @@ def crack_pcap_endpoint():
             crack_hash(h)
 
         print('Removing /tmp/HashQueue.hash')
-        # os.remove('/tmp/HashQueue.hash')
+        #os.remove('/tmp/HashQueue.hash')
 
         return jsonify({'result': 'Hashes added to the cracking queue', 'hashes':raw_hashes}), 200
     else:
@@ -124,25 +120,8 @@ def get_cracked_hash():
 
     return jsonify({'result': cracked_hashes[hash_to_check.split('*')[5]]}), 200
 
-
-def process_queue():
-    while not hash_queue.empty():
-        hash_to_crack = hash_queue.get()
-        print(f'Processing hash from queue: {hash_to_crack}')
-        result = crack_hash(hash_to_crack)
-        update_cracked_hashes(hash_to_crack, result)
-
-
-
 # Load cracked hashes from the potfile
 cracked_hashes = load_cracked_hashes()
 
-print(cracked_hashes)
-
-# Run the queue processing in the background
-processing_thread = threading.Thread(target=process_queue, daemon=True)
-processing_thread.start()
-
-print('Processing thread started')
-
-app.run(host='0.0.0.0',debug=True)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0',debug=True)
