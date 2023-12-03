@@ -14,4 +14,4 @@ RUN pip3 install gunicorn
 
 WORKDIR /opt/HashQueue
 
-ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:8000", "main:app"]
+ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
