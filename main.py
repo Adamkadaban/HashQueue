@@ -94,7 +94,7 @@ def crack_pcap_endpoint():
     else:
         return jsonify({'error': 'Hashes not found in pcap'}), 400
 
-@app.route('/getCrackedHash', method=['POST'])
+@app.route('/getCrackedHash', methods=['POST'])
 def get_cracked_hash():
     data = request.get_json()
 
