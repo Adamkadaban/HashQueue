@@ -1,6 +1,5 @@
 #!/bin/python3
 from flask import Flask, request, jsonify
-import subprocess
 import os
 from queue import Queue
 
@@ -43,7 +42,9 @@ def crack_hash(hash_to_crack):
     print(f"Cracking hash: {hash_to_crack}")
     with open('/tmp/HashQueue.hash', 'w') as fout:
         fout.write(hash_to_crack)
-    subprocess.run(['hashcat', '-m', '22000', '/tmp/HashQueue.hash', '/usr/share/wordlists/rockyou.txt'])
+
+    os.popen('hashcat -m 22000 /tmp/HashQueue.hash /usr/share/wordlists/rockyou.txt')
+    # subprocess.run(['hashcat', '-m', '22000', '/tmp/HashQueue.hash', '/usr/share/wordlists/rockyou.txt'])
     return f"Hash cracked for {hash_to_crack}"
 
 
@@ -73,14 +74,15 @@ def crack_pcap_endpoint():
 
     file = request.files['file']
 
-    if file.filename = '':
+    if file.filename == '':
         return jsonify({'error':'No file selected'}), 400
 
     filename = secure_filename(file.filename)
     filepath = os.path.join('/opt/HashQueue/data', filename)
     file.save(path)
 
-    subprocess.run(['hcxpcapngtool', '-o', '/tmp/HashQueue.hash', filepath])
+    os.popen (f'hcxpcapngtool -o /tmp/HashQueue.hash {filepath}')
+    #subprocess.run(['hcxpcapngtool', '-o', '/tmp/HashQueue.hash', filepath])
 
     if os.path.exists('/tmp/HashQueue.hash'):
         with open('/tmp/HashQueue.hash') as f:
