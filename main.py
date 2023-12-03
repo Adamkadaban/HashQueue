@@ -2,6 +2,10 @@
 from flask import Flask, request, jsonify
 import os
 from queue import Queue
+import threading
+import subprocess
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 
@@ -11,7 +15,7 @@ hash_queue = Queue()
 # Dictionary to store cracked hashes
 cracked_hashes = {}
 
-potfile = '/root/.hashcat/hashcat.potfile'
+potfile = '/root/.local/share/hashcat/hashcat.potfile'
 
 def load_cracked_hashes():
     if os.path.exists(potfile):
@@ -22,15 +26,12 @@ def load_cracked_hashes():
 
     cracked_hashes = {}
 
-    for hash in raw_hashes:
-        hash = hash.rstrip()
-        hash = hash.split(':')
-        cracked_hashes[hash[0]] = hash[1]
+    for h in raw_hashes:
+        h = h.rstrip()
+        h = h.split(':')
+        cracked_hashes[h[0].split('*')[1]] = h[1]
 
     return cracked_hashes
-
-def update_cracked_hashes(hash, result):
-    cracked_hashes[hash] = result
 
 def crack_hash(hash_to_crack):
     # Replace this command with your actual hashcat command
@@ -40,13 +41,15 @@ def crack_hash(hash_to_crack):
     with open('/tmp/HashQueue.hash', 'w') as fout:
         fout.write(hash_to_crack)
 
-    os.popen('hashcat -m 22000 /tmp/HashQueue.hash /usr/share/wordlists/rockyou.txt')
-    # subprocess.run(['hashcat', '-m', '22000', '/tmp/HashQueue.hash', '/usr/share/wordlists/rockyou.txt'])
+    # os.popen('hashcat -m 22000 /tmp/HashQueue.hash /usr/share/wordlists/rockyou.txt')
+    subprocess.Popen(['hashcat', '-m', '22000', '/tmp/HashQueue.hash', '/usr/share/wordlists/rockyou.txt'])
     return f"Hash cracked for {hash_to_crack}"
 
 
 @app.route('/crackHash', methods=['POST'])
 def crack_hash_endpoint():
+    cracked_hashes = load_cracked_hashes()
+
     data = request.get_json()
 
     if 'hash' not in data:
@@ -56,16 +59,18 @@ def crack_hash_endpoint():
 
     # Check if the hash is already cracked
 
-    if hash_to_crack in cracked_hashes:
+    if hash_to_crack.split('*')[5] in cracked_hashes:
         return jsonify({'result': f"Hash already cracked"})
 
     # Add the hash to the queue
-    hash_queue.put(hash_to_crack)
+    # hash_queue.put(hash_to_crack)
+    crack_hash(hash_to_crack)
 
     return jsonify({'result': 'Hash added to the cracking queue'}), 200
 
-@app.route('/crackPcap', methods=['PUT'])
+@app.route('/crackPcap', methods=['POST'])
 def crack_pcap_endpoint():
+    print(request)
     if 'file' not in request.files:
         return jsonify({'error': 'File not provided'}), 400
 
@@ -76,19 +81,24 @@ def crack_pcap_endpoint():
 
     filename = secure_filename(file.filename)
     filepath = os.path.join('/opt/HashQueue/data', filename)
-    file.save(path)
+    file.save(filepath)
+    print(f'[+] File saved to {filepath}')
 
-    os.popen (f'hcxpcapngtool -o /tmp/HashQueue.hash {filepath}')
-    #subprocess.run(['hcxpcapngtool', '-o', '/tmp/HashQueue.hash', filepath])
+    #os.popen(f'hcxpcapngtool -o /tmp/HashQueue.hash {filepath}')
+    subprocess.call(['hcxpcapngtool', '-o', '/tmp/HashQueue.hash', filepath])
+
+    print(f'Finished writing to /tmp/HashQueue.hash')
 
     if os.path.exists('/tmp/HashQueue.hash'):
         with open('/tmp/HashQueue.hash') as f:
             raw_hashes = [h.rstrip() for h in f.readlines()]
 
-        for hash in raw_hashes:
-            crack_hash(hash)
+        for h in raw_hashes:
+            print('Calling crack hash function')
+            crack_hash(h)
 
-        os.remove('/tmp/HashQueue.hash')
+        print('Removing /tmp/HashQueue.hash')
+        # os.remove('/tmp/HashQueue.hash')
 
         return jsonify({'result': 'Hashes added to the cracking queue', 'hashes':raw_hashes}), 200
     else:
@@ -96,6 +106,10 @@ def crack_pcap_endpoint():
 
 @app.route('/getCrackedHash', methods=['POST'])
 def get_cracked_hash():
+    cracked_hashes = load_cracked_hashes()
+
+    # print(cracked_hashes)
+
     data = request.get_json()
 
     if 'hash' not in data:
@@ -103,18 +117,18 @@ def get_cracked_hash():
 
     hash_to_check = data['hash']
 
-    if hash_to_check not in cracked_hashes:
+    if hash_to_check.split('*')[5] not in cracked_hashes:
         return jsonify({'error': 'No request made to crack'}), 400
-
-    if cracked_hashes[hash_to_check] == '':
+    elif cracked_hashes[hash_to_check.split('*')[5]] == '':
         return jsonify({'result': 'Unable to crack'}), 200
 
-    return jsonify({'result': cracked_hashes[hash_to_check]}), 200
+    return jsonify({'result': cracked_hashes[hash_to_check.split('*')[5]]}), 200
 
 
 def process_queue():
     while not hash_queue.empty():
         hash_to_crack = hash_queue.get()
+        print(f'Processing hash from queue: {hash_to_crack}')
         result = crack_hash(hash_to_crack)
         update_cracked_hashes(hash_to_crack, result)
 
@@ -123,10 +137,12 @@ def process_queue():
 # Load cracked hashes from the potfile
 cracked_hashes = load_cracked_hashes()
 
+print(cracked_hashes)
 
-if __name__ == '__main__':
-    # Run the queue processing in the background
-    import threading
-    threading.Thread(target=process_queue, daemon=True).start()
+# Run the queue processing in the background
+processing_thread = threading.Thread(target=process_queue, daemon=True)
+processing_thread.start()
 
-    app.run(debug=True)
+print('Processing thread started')
+
+app.run(host='0.0.0.0',debug=True)
