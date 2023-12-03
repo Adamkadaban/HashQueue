@@ -1,7 +1,7 @@
 FROM debian:latest
 
 RUN apt-get update && \
-    apt-get install -y wget python3 python3-pip hashcat hcxdumptool
+    apt-get install -y wget python3 python3-pip hashcat hcxtools
 
 RUN mkdir -p /opt/HashQueue && \
     mkdir -p /usr/share/wordlists
