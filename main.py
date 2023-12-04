@@ -81,6 +81,8 @@ def crack_pcap_endpoint():
     print(f'[+] File saved to {filepath}')
 
     #os.popen(f'hcxpcapngtool -o /tmp/HashQueue.hash {filepath}')
+    if os.path.exists('/tmp/HashQueue.hash'):
+        os.remove('/tmp/HashQueue.hash')
     subprocess.call(['hcxpcapngtool', '-o', '/tmp/HashQueue.hash', filepath])
 
     print(f'Finished writing to /tmp/HashQueue.hash')
@@ -94,7 +96,6 @@ def crack_pcap_endpoint():
             crack_hash(h)
 
         print('Removing /tmp/HashQueue.hash')
-        #os.remove('/tmp/HashQueue.hash')
 
         return jsonify({'result': 'Hashes added to the cracking queue', 'hashes':raw_hashes}), 200
     else:
